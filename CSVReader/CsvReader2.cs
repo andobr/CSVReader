@@ -1,54 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CSVReader
 {
     public class CsvReader2
     {
-        public static IEnumerable<T> ReadСsv2<T>(string filename) where T : class, new()
+        public static IEnumerable<T> ReadСsv2<T>(string filename) where T : new()
         {
-            using (var stream = new StreamReader(filename))
+            var list = CsvReader1.ReadСsv1(filename).ToList();
+            var header = list.First().ToList().Select(x => x.Replace("\"", "").Replace(".", "")).ToArray();
+            list.RemoveAt(0);
+            foreach (var str in list)
             {
-                var header = GetHeader(stream);
-                while (true)
-                {
-                    var str = stream.ReadLine();
-                    if (str == null)
-                    {
-                        stream.Close();
-                        yield break;
-                    }
-                    yield return GetObject<T>(header, str.Replace("\"", "").Split(','));
-                }
+                yield return GetObject<T>(header, str);
             }
         }
 
-        private static string[] GetHeader(StreamReader stream)
-        {
-            var header = stream.ReadLine();
-            if (header == null)
-            {
-                stream.Close();
-            }
-            return header.Replace("\"", "").Replace(".", "").Split(',');
-        }
-
-        private static T GetObject<T>(string[] props, string[] str) where T : class, new()
+        private static T GetObject<T>(string[] props, string[] str) where T : new()
         {
             var obj = new T();
 
             for (int i = 0; i < props.Length; i++)
             {
-                var propInfo = typeof(T).GetProperties().FirstOrDefault(x => x.Name == props[i]);
-                if (propInfo != null)
-                {
-                    var convertedValue = Converter.ConvertFor<T>(propInfo.Name, str[i]);
-                    propInfo.SetValue(obj, convertedValue);
-                }
+                var property = typeof(T).GetProperty(props[i]);
+                if (property == null) continue;
+                var res = Converter.ConvertFor<T>(property.Name, str[i]);
+                property.SetValue(obj, res);
             }
 
             return obj;

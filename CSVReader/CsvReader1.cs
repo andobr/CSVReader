@@ -2,28 +2,39 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CSVReader
 {
-    public class CsvReader1 
+    public class CsvReader1
     {
+        private const string NA = "NA";
+
         public static IEnumerable<string[]> ReadСsv1(string filename)
         {
             using (var stream = new StreamReader(filename))
             {
+                var header = ReadLine(stream);
+                if (header == null) yield break;
+                yield return header;
+
                 while (true)
                 {
-                    var str = stream.ReadLine();
-                    if (str == null)
-                    {
-                        stream.Close();
-                        yield break;
-                    }
-                    yield return str.Replace("\"", "").Split(',').Select(x => x == "NA" ? null : x).ToArray();
+                    var str = ReadLine(stream);
+                    if (str == null) yield break;
+                    if (str.Length != header.Length) throw new Exception("Размерность строки не совпадает с размерностью заголовка");
+                    yield return str;
                 }
             }
+        }
+
+        private static string[] ReadLine(StreamReader stream)
+        {
+            var header = stream.ReadLine()?.Replace("\"", "").Split(',').Select(x => x == NA ? null : x).ToArray();
+            if (header == null)
+            {
+                stream.Close();
+            }
+            return header;
         }
     }
 }

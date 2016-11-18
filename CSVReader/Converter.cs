@@ -2,40 +2,31 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CSVReader
 {
-    class Converter
+    internal class Converter
     {
-        private const string na = "NA";
+        private static readonly List<Type> Types = new List<Type>() {typeof(int), typeof(int?), typeof(double), typeof(double?), typeof(string)}; 
 
-        private static readonly List<Type> types = new List<Type>() {typeof(int), typeof(double), typeof(string)}; 
-
-        public static object ConvertFor<T>(string property, string value)
-        {            
-            var type = typeof(T).GetProperty(property).PropertyType;
-            var underType = Nullable.GetUnderlyingType(type);
-            return (underType == null) ? Convert(value, false, type) : Convert(value, true, underType);
-        }
-
-        private static object Convert(string value, bool isNullable, Type type)
+        public static object ConvertFor<T>(string property, string source)
         {
-            TypeCheck(type);
-            if (value == null || value.Equals(na) && !isNullable) throw new ArgumentException();
-            return value.Equals(na) ? null : TypeDescriptor.GetConverter(type).ConvertFrom(null, CultureInfo.InvariantCulture, value);
-        }
+            var targetType = typeof(T).GetProperty(property)?.PropertyType;
 
-        private static void TypeCheck(Type type)
-        {
-            if (!types.Contains(type))
-            {
-                throw new TypeAccessException();
-            }
+            if (!Types.Contains(targetType)) throw new Exception($"Конвертирование в тип {targetType} не поддерживается");
+
+            var underType = Nullable.GetUnderlyingType(targetType);
+            
+            // Если строка пустая и тип не является Nullable
+            if (source == null && underType == null) throw new Exception($"Тип {targetType} не поддерживает значения null");
+
+            if (source == null) return null;
+
+            TypeConverter converter = TypeDescriptor.GetConverter(underType ?? targetType);
+
+            if(!converter.IsValid(source)) throw new Exception($"{source} не является допустимым значением для {targetType}");
+
+            return converter.ConvertFromString(null, CultureInfo.InvariantCulture, source);
         }
     }
 }

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Dynamic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CSVReader
 {
@@ -12,44 +8,27 @@ namespace CSVReader
     {
         public static IEnumerable<dynamic> ReadCsv4(string filename)
         {
-            using (var stream = new StreamReader(filename))
+            var list = CsvReader1.ReadСsv1(filename).ToList();
+            var header = list.First().ToList().Select(x => x.Replace("\"", "").Replace(".", "")).ToArray();
+            list.RemoveAt(0);
+            foreach (var str in list)
             {
-                var header = GetHeader(stream);
-                while (true)
-                {
-                    var str = stream.ReadLine();
-                    if (str == null)
-                    {
-                        stream.Close();
-                        yield break;
-                    }
-                    yield return GetObject(header, str.Replace("\"", "").Split(','));
-                }
+                yield return GetObject(header, str);
             }
-        }
-
-        private static string[] GetHeader(StreamReader stream)
-        {
-            var header = stream.ReadLine();
-            if (header == null)
-            {
-                stream.Close();
-            }
-            return header.Replace("\"", "").Replace(".", "").Split(',');
         }
 
         private static dynamic GetObject(string[] props, string[] str)
         {
-            var result = new ExpandoObject();
-            var expandoDict = (IDictionary<string, object>) result;
+            var obj = new ExpandoObject();
+            var expando = (IDictionary<string, object>) obj;
 
-            for (int i = 0; i < props.Length; i++)
+            for (var i = 0; i < props.Length; i++)
             {
                 var res = Converter.ConvertFor<AirQualityInfo>(props[i], str[i]);
-                expandoDict.Add(props[i], res);
+                expando.Add(props[i], res);
             }
 
-            return result;
+            return obj;
         }
     }
 }
