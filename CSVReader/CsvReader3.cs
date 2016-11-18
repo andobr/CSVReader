@@ -8,7 +8,7 @@ namespace CSVReader
         public static IEnumerable<Dictionary<string, object>> ReadСsv3(string filename)
         {
             var list = CsvReader1.ReadСsv1(filename).ToList();
-            var header = list.First().ToList().Select(x => x.Replace("\"", "").Replace(".", "")).ToArray();
+            var header = list.First().ToArray();
             list.RemoveAt(0);
             foreach (var str in list)
             {
