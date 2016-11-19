@@ -9,18 +9,18 @@ namespace CSVReader
     {
         private static readonly List<Type> Types = new List<Type>() {typeof(int), typeof(int?), typeof(double), typeof(double?), typeof(string)}; 
 
-        public static object ConvertFor<T>(string property, string source)
+        public static object ConvertFor(string property, string source, Type type)
         {
-            var targetType = typeof(T).GetProperty(property)?.PropertyType;
+            var targetType = type.GetProperty(property)?.PropertyType;
 
             if (!Types.Contains(targetType)) throw new Exception($"Конвертирование в тип {targetType} не поддерживается");
 
             var underType = Nullable.GetUnderlyingType(targetType);
             
             // Если строка пустая и тип не является Nullable
-            if (source == null && underType == null) throw new Exception($"Тип {targetType} не поддерживает значения null");
+            if (string.IsNullOrEmpty(source) && underType == null) throw new Exception($"Тип {targetType} не поддерживает значения null");
 
-            if (source == null) return null;
+            if (string.IsNullOrEmpty(source)) return null;
 
             TypeConverter converter = TypeDescriptor.GetConverter(underType ?? targetType);
 
