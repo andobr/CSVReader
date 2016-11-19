@@ -19,7 +19,7 @@ namespace CSVReader
             var expando = (IDictionary<string, object>) obj;
             for (var i = 0; i < props.Length; i++)
             {
-                var res = Converter.ConvertFor(props[i], str[i], typeof(T));
+                var res = Converter.ConvertFor<T>(props[i], str[i]);
                 expando.Add(props[i], res);
             }
             return obj;

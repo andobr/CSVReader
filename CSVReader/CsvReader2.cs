@@ -19,7 +19,7 @@ namespace CSVReader
             {
                 var property = typeof(T).GetProperty(props[i]);
                 if (property == null) continue;
-                var res = Converter.ConvertFor(property.Name, str[i], typeof(T));
+                var res = Converter.ConvertFor<T>(property.Name, str[i]);
                 property.SetValue(obj, res);
             }
             return obj;

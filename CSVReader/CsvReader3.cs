@@ -17,7 +17,7 @@ namespace CSVReader
             var obj = new Dictionary<string, object>();
             for (var i = 0; i < props.Length; i++)
             {
-                var res = Converter.ConvertFor(props[i], str[i], typeof(T));
+                var res = Converter.ConvertFor<T>(props[i], str[i]);
                 obj.Add(props[i], res);
             }
             return obj;

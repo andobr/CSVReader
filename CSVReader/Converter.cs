@@ -9,9 +9,9 @@ namespace CSVReader
     {
         private static readonly List<Type> Types = new List<Type>() {typeof(int), typeof(int?), typeof(double), typeof(double?), typeof(string)}; 
 
-        public static object ConvertFor(string property, string source, Type type)
+        public static object ConvertFor<T>(string property, string source)
         {
-            var targetType = type.GetProperty(property)?.PropertyType;
+            var targetType = typeof(T).GetProperty(property)?.PropertyType;
 
             if (!Types.Contains(targetType)) throw new Exception($"Конвертирование в тип {targetType} не поддерживается");
 
